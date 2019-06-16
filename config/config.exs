@@ -28,3 +28,8 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env()}.exs"
+
+# ffmpeg should be available in your PATH configuration
+# (or you could change this to a path in your environment)
+config :ffmpex, ffmpeg_path: "ffmpeg"
+config :ffmpex, ffprobe_path: "ffprobe"
