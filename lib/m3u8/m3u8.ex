@@ -10,6 +10,7 @@ defmodule Multiplex.M3u8 do
            |> Enum.map(fn segment -> "#{config[:base_url]}/stream/#{segment}" end)
            |> Enum.map(fn segment -> "#EXTINF:#{segment_duration}\n#{segment}" end)
         )
+      content = content ++ ["#EXT-X-ENDLIST"]
 
       File.mkdir_p(config[:playlists_dir])
       {:ok, file} = File.open("#{config[:playlists_dir]}/#{folder}.m3u8", [:write, :utf8])
