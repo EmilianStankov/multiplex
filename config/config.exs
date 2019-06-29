@@ -35,5 +35,7 @@ config :ffmpex, ffmpeg_path: "ffmpeg"
 config :ffmpex, ffprobe_path: "ffprobe"
 
 config :multiplex, Multiplex.Endpoint, port: 4000
+
+config :multiplex, Multiplex, base_url: "http://localhost:4000"
 config :multiplex, Multiplex, playlists_dir: "D:/Code/elixir/multiplex/playlists"
 config :multiplex, Multiplex, segments_dir: "D:/Code/elixir/multiplex/segments"
