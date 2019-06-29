@@ -33,3 +33,7 @@ use Mix.Config
 # (or you could change this to a path in your environment)
 config :ffmpex, ffmpeg_path: "ffmpeg"
 config :ffmpex, ffprobe_path: "ffprobe"
+
+config :multiplex, Multiplex.Endpoint, port: 4000
+config :multiplex, Multiplex.Router, playlists_dir: "D:/Code/elixir/multiplex/playlists"
+config :multiplex, Multiplex.Router, segments_dir: "D:/Code/elixir/multiplex/segments"
