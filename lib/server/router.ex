@@ -12,6 +12,21 @@ defmodule Multiplex.Router do
     end
   end
 
+  post "/playlist/add" do
+    file = conn.params["file"]
+
+    case file do
+      nil ->
+        send_resp(conn, 400, "Bad Request! Missing file parameter.")
+
+      _ ->
+        Multiplex.Segment.extract_segments(file)
+        |> Multiplex.M3u8.create_playlist()
+
+        send_resp(conn, 200, "Success!")
+    end
+  end
+
   get "/stream/:stream/:filename" do
     with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
       conn

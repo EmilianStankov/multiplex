@@ -5,7 +5,7 @@ defmodule Multiplex.Endpoint do
   plug(:match)
 
   plug(Plug.Parsers,
-    parsers: [:json],
+    parsers: [:urlencoded, :multipart, :json],
     pass: ["application/json"],
     json_decoder: Poison
   )

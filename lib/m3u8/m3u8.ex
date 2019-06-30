@@ -4,12 +4,12 @@ defmodule Multiplex.M3u8 do
 
     with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
       content =
-        content ++ (
-          Path.wildcard("#{config[:segments_dir]}/#{folder}/*.ts")
+        content ++
+          (Path.wildcard("#{config[:segments_dir]}/#{folder}/*.ts")
            |> Enum.map(fn segment -> Path.relative_to(segment, config[:segments_dir]) end)
            |> Enum.map(fn segment -> "#{config[:base_url]}/stream/#{segment}" end)
-           |> Enum.map(fn segment -> "#EXTINF:#{segment_duration}\n#{segment}" end)
-        )
+           |> Enum.map(fn segment -> "#EXTINF:#{segment_duration}\n#{segment}" end))
+
       content = content ++ ["#EXT-X-ENDLIST"]
 
       File.mkdir_p(config[:playlists_dir])
