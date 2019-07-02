@@ -27,7 +27,7 @@ defmodule MultiplexTest do
   test "missing playlist returns proper status" do
     conn = conn(:get, "http://localhost:4000/playlist/missing")
     response = Router.call(conn, @opts)
-    
+
     assert response.status == 404
   end
 
@@ -35,7 +35,7 @@ defmodule MultiplexTest do
   test "missing stream returns proper status" do
     conn = conn(:get, "http://localhost:4000/stream/missing/missing")
     response = Router.call(conn, @opts)
-    
+
     assert response.status == 404
   end
 
@@ -43,7 +43,7 @@ defmodule MultiplexTest do
   test "missing segment for existing stream returns proper status" do
     conn = conn(:get, "http://localhost:4000/stream/noise/missing")
     response = Router.call(conn, @opts)
-    
+
     assert response.status == 404
   end
 
@@ -51,7 +51,7 @@ defmodule MultiplexTest do
   test "missing segment for existing stream returns status" do
     conn = conn(:get, "http://localhost:4000/stream/noise")
     response = Router.call(conn, @opts)
-    
+
     assert response.status == 404
   end
 end
