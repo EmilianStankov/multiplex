@@ -1,18 +1,29 @@
 defmodule Multiplex do
-  @moduledoc """
-  Documentation for Multiplex.
-  """
+  use GenServer
 
-  @doc """
-  Hello world.
+  def get_playlist(filename) do
+    GenServer.call(__MODULE__, {:get_playlist, filename})
+  end
 
-  ## Examples
+  def start_link(_) do
+    {:ok, registry} = GenServer.start_link(__MODULE__, :ok)
+    Process.register(registry, __MODULE__)
+    {:ok, registry}
+  end
 
-      iex> Multiplex.hello()
-      :world
+  def init(_) do
+    {:ok, nil}
+  end
 
-  """
-  def hello do
-    :world
+  def handle_call({:get_playlist, filename}, _from, state) do
+    with {:ok, config} <- Application.fetch_env(:multiplex, __MODULE__) do
+      case File.exists?("#{config[:playlists_dir]}/#{filename}") do
+        true ->
+          {:reply, %{status: 200, file: "#{config[:playlists_dir]}/#{filename}"}, state}
+
+        _ ->
+          {:reply, %{status: 404, message: "File not found!"}, state}
+      end
+    end
   end
 end

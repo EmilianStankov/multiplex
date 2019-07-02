@@ -6,6 +6,7 @@ defmodule Multiplex.Application do
     children = [
       # Starts a worker by calling: Lambda.Worker.start_link(arg)
       # {Lambda.Worker, arg},
+      Multiplex,
       Multiplex.Endpoint
     ]
 
