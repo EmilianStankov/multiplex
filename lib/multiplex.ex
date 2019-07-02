@@ -5,6 +5,10 @@ defmodule Multiplex do
     GenServer.call(__MODULE__, {:get_playlist, filename})
   end
 
+  def add_playlist(file) do
+    GenServer.cast(__MODULE__, {:add_playlist, file})
+  end
+
   def start_link(_) do
     {:ok, registry} = GenServer.start_link(__MODULE__, :ok)
     Process.register(registry, __MODULE__)
@@ -25,5 +29,12 @@ defmodule Multiplex do
           {:reply, %{status: 404, message: "File not found!"}, state}
       end
     end
+  end
+
+  def handle_cast({:add_playlist, file}, state) do
+    Multiplex.Segment.extract_segments(file)
+    |> Multiplex.M3u8.create_playlist()
+
+    {:noreply, state}
   end
 end

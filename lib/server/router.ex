@@ -26,10 +26,9 @@ defmodule Multiplex.Router do
         send_resp(conn, 400, "Bad Request! Missing file parameter.")
 
       _ ->
-        Multiplex.Segment.extract_segments(file)
-        |> Multiplex.M3u8.create_playlist()
+        Multiplex.add_playlist(file)
 
-        send_resp(conn, 200, "Success!")
+        send_resp(conn, 202, "Accepted!")
     end
   end
 

@@ -12,7 +12,7 @@ defmodule MultiplexTest do
     conn = conn(:post, "http://localhost:4000/playlist/add", %{:file => upload})
     response = Router.call(conn, @opts)
 
-    assert response.status == 200
+    assert response.status == 202
   end
 
   @opts Router.init([])
