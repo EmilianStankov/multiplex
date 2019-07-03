@@ -41,6 +41,7 @@ config :multiplex, Multiplex, playlists_dir: "D:/Code/elixir/multiplex/playlists
 config :multiplex, Multiplex, segments_dir: "D:/Code/elixir/multiplex/segments"
 config :multiplex, Multiplex, uploads_dir: "D:/Code/elixir/multiplex/uploads"
 
+config :multiplex, MultiplexTest, base_url: "http://localhost:4000"
 config :multiplex, MultiplexTest, test_dir: "D:/Code/elixir/multiplex/test"
 config :multiplex, MultiplexTest, playlists_dir: "D:/Code/elixir/multiplex/playlists"
 config :multiplex, MultiplexTest, segments_dir: "D:/Code/elixir/multiplex/segments"
