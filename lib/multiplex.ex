@@ -5,12 +5,15 @@ defmodule Multiplex do
     GenServer.call(__MODULE__, {:get_playlist, filename})
   end
 
-  def add_playlist(input_file) do
+  def add_playlist(params) do
     with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
       File.mkdir_p(config[:uploads_dir])
-      file = "#{config[:uploads_dir]}/#{input_file.filename}"
-      File.cp!(input_file.path, file)
-      GenServer.cast(__MODULE__, {:add_playlist, file})
+      file = "#{config[:uploads_dir]}/#{params["file"].filename}"
+      File.cp!(params["file"].path, file)
+      case params["segment_duration"] do
+        nil -> GenServer.cast(__MODULE__, {:add_playlist, file})
+        x -> GenServer.cast(__MODULE__, {:add_playlist, file, x})
+      end
     end
   end
 
@@ -42,6 +45,13 @@ defmodule Multiplex do
 
   def handle_cast({:add_playlist, file}, state) do
     Multiplex.Segment.extract_segments(file)
+    |> Multiplex.M3u8.create_playlist()
+
+    {:noreply, state}
+  end
+
+  def handle_cast({:add_playlist, file, segment_duration}, state) do
+    Multiplex.Segment.extract_segments(file, ".mp3", segment_duration)
     |> Multiplex.M3u8.create_playlist()
 
     {:noreply, state}

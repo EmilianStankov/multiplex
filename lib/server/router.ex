@@ -23,10 +23,10 @@ defmodule Multiplex.Router do
 
     case file do
       nil ->
-        send_resp(conn, 400, "Bad Request! Missing file parameter.")
+        send_resp(conn, 400, "Bad Request! Missing required file parameter.")
 
       _ ->
-        Multiplex.add_playlist(file)
+        Multiplex.add_playlist(conn.params)
 
         send_resp(conn, 202, "Accepted!")
     end
