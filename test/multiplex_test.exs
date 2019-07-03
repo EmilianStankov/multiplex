@@ -15,6 +15,10 @@ defmodule MultiplexTest do
     response = Router.call(conn, @opts)
 
     assert response.status == 202
+
+    Process.sleep(1000)
+
+    File.rm_rf("#{config[:segments_dir]}/noise")
   end
 
   @opts Router.init([])
@@ -59,7 +63,7 @@ defmodule MultiplexTest do
 
   test "segmentation with default settings splits file in right number of segments" do
     {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
-    file = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+    file = "#{config[:test_dir]}/noise.mp3"
 
     Multiplex.Segment.extract_segments(file)
 
@@ -71,7 +75,7 @@ defmodule MultiplexTest do
 
   test "segmentation with custom settings splits file in right number of segments" do
     {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
-    file = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+    file = "#{config[:test_dir]}/noise.mp3"
 
     Multiplex.Segment.extract_segments(file, ".mp3", 3)
 
@@ -83,7 +87,7 @@ defmodule MultiplexTest do
 
   test "segmentation with wrong file extension" do
     {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
-    file = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+    file = "#{config[:test_dir]}/noise.mp3"
 
     Multiplex.Segment.extract_segments(file, ".wav", 3)
 
