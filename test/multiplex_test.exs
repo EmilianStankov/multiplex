@@ -188,4 +188,34 @@ defmodule MultiplexTest do
 
     File.rm_rf("#{config[:segments_dir]}/noise")
   end
+
+  test "playlist file with custom config has correct content" do
+    {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
+    file = "#{config[:test_dir]}/noise.mp3"
+
+    Multiplex.Segment.extract_segments(file, ".mp3", 8)
+    |> Multiplex.M3u8.create_playlist(8)
+
+    expected_body = [
+      "#EXTM3U",
+      "#EXT-X-VERSION:3",
+      "#EXT-X-TARGETDURATION:8",
+      "#EXTINF:8",
+      "#{config[:base_url]}/stream/noise/noise.000.ts",
+      "#EXTINF:8",
+      "#{config[:base_url]}/stream/noise/noise.001.ts",
+      "#EXTINF:8",
+      "#{config[:base_url]}/stream/noise/noise.002.ts",
+      "#EXTINF:8",
+      "#{config[:base_url]}/stream/noise/noise.003.ts",
+      "#EXT-X-ENDLIST"
+    ] |> Enum.join("\n")
+
+    {:ok, body} = File.read("#{config[:playlists_dir]}/noise.m3u8")
+
+    assert File.exists?("#{config[:playlists_dir]}/noise.m3u8")
+    assert body === expected_body
+
+    File.rm_rf("#{config[:segments_dir]}/noise")
+  end
 end
