@@ -45,4 +45,16 @@ defmodule Multiplex do
 
     {:noreply, state}
   end
+
+  def handle_call({:get_stream, stream, filename}, _from, state) do
+    with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
+      case File.exists?("#{config[:segments_dir]}/#{stream}/#{filename}") do
+        true ->
+          {:reply, %{status: 200, file: "#{config[:segments_dir]}/#{stream}/#{filename}"}, state}
+
+        _ ->
+          {:reply, %{status: 404, message: "File not found!"}, state}
+      end
+    end
+  end
 end
