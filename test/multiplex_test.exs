@@ -32,7 +32,10 @@ defmodule MultiplexTest do
     {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
 
     upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
-    conn = conn(:post, "http://localhost:4000/playlist/add", %{:file => upload, :segment_duration => 8})
+
+    conn =
+      conn(:post, "http://localhost:4000/playlist/add", %{:file => upload, :segment_duration => 8})
+
     response = Router.call(conn, @opts)
 
     assert response.status == 202

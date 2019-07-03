@@ -10,6 +10,7 @@ defmodule Multiplex do
       File.mkdir_p(config[:uploads_dir])
       file = "#{config[:uploads_dir]}/#{params["file"].filename}"
       File.cp!(params["file"].path, file)
+
       case params["segment_duration"] do
         nil -> GenServer.cast(__MODULE__, {:add_playlist, file})
         x -> GenServer.cast(__MODULE__, {:add_playlist, file, x})
