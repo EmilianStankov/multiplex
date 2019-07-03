@@ -61,6 +61,59 @@ defmodule MultiplexTest do
     assert response.status == 404
   end
 
+  @opts Router.init([])
+  test "can get segments for existing stream" do
+    {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
+
+    upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+    conn(:post, "http://localhost:4000/playlist/add", %{:file => upload})
+    |> Router.call(@opts)
+
+    Process.sleep(1000)
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.000.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.001.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.002.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.003.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.004.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.005.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.006.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.007.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    File.rm_rf("#{config[:segments_dir]}/noise")
+  end
+
   test "segmentation with default settings splits file in right number of segments" do
     {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
     file = "#{config[:test_dir]}/noise.mp3"
