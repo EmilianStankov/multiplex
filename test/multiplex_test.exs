@@ -3,8 +3,6 @@ defmodule MultiplexTest do
   use Plug.Test
   alias Multiplex.Router
   doctest Multiplex
-  import FFmpex
-  use FFmpex.Options
 
   @opts Router.init([])
   test "can create playlist with valid request" do
@@ -27,6 +25,21 @@ defmodule MultiplexTest do
     response = Router.call(conn, @opts)
 
     assert response.status == 400
+  end
+
+  @opts Router.init([])
+  test "can create playlist with custom config" do
+    {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
+
+    upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+    conn = conn(:post, "http://localhost:4000/playlist/add", %{:file => upload, :segment_duration => 8})
+    response = Router.call(conn, @opts)
+
+    assert response.status == 202
+
+    Process.sleep(1000)
+
+    File.rm_rf("#{config[:segments_dir]}/noise")
   end
 
   @opts Router.init([])
