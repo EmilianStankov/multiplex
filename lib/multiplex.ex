@@ -7,6 +7,7 @@ defmodule Multiplex do
 
   def add_playlist(input_file) do
     with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
+      File.mkdir_p(config[:uploads_dir])
       file = "#{config[:uploads_dir]}/#{input_file.filename}"
       File.cp!(input_file.path, file)
       GenServer.cast(__MODULE__, {:add_playlist, file})
