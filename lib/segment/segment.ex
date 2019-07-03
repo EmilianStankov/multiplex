@@ -2,11 +2,8 @@ defmodule Multiplex.Segment do
   import FFmpex
   use FFmpex.Options
 
-  def extract_segments(input_file, file_ext \\ ".mp3", segment_time \\ 4) do
+  def extract_segments(file, file_ext \\ ".mp3", segment_time \\ 4) do
     with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
-      file = "#{config[:uploads_dir]}/#{input_file.filename}"
-      File.cp!(input_file.path, file)
-
       basename = Path.basename(file, file_ext)
       File.mkdir_p("#{config[:segments_dir]}/#{basename}")
 

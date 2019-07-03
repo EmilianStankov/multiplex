@@ -5,8 +5,16 @@ defmodule Multiplex do
     GenServer.call(__MODULE__, {:get_playlist, filename})
   end
 
-  def add_playlist(file) do
-    GenServer.cast(__MODULE__, {:add_playlist, file})
+  def add_playlist(input_file) do
+    with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
+      file = "#{config[:uploads_dir]}/#{input_file.filename}"
+      File.cp!(input_file.path, file)
+      GenServer.cast(__MODULE__, {:add_playlist, file})
+    end
+  end
+
+  def get_stream(stream, filename) do
+    GenServer.call(__MODULE__, {:get_stream, stream, filename})
   end
 
   def start_link(_) do
