@@ -150,6 +150,29 @@ defmodule MultiplexTest do
   end
 
   @opts Router.init([])
+  test "can get playlist with valid session", context do
+    upload = %Plug.Upload{path: "#{context.config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+
+    conn =
+      conn(:post, "http://localhost:4000/playlist/add", %{:file => upload})
+      |> put_req_header("session-id", "test")
+
+    response = Router.call(conn, @opts)
+
+    assert response.status == 202
+
+    Process.sleep(1000)
+
+    conn = conn(:get, "http://localhost:4000/playlist/noise.m3u8")
+    |> put_req_header("session-id", "test")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 200
+
+    File.rm_rf("#{context.config[:segments_dir]}/noise")
+  end
+
+  @opts Router.init([])
   test "missing playlist returns proper status" do
     conn =
       conn(:get, "http://localhost:4000/playlist/missing")
@@ -360,5 +383,19 @@ defmodule MultiplexTest do
     assert body === expected_body
 
     File.rm_rf("#{context.config[:segments_dir]}/noise")
+  end
+
+  test "can create session" do
+    children = DynamicSupervisor.which_children(Multiplex.DynamicSupervisor) |> Kernel.length
+    Multiplex.DynamicSupervisor.create_instance(:test2)
+    assert DynamicSupervisor.which_children(Multiplex.DynamicSupervisor) |> Kernel.length === children + 1
+  end
+
+  test "can terminate session" do
+    children = DynamicSupervisor.which_children(Multiplex.DynamicSupervisor) |> Kernel.length
+    Multiplex.DynamicSupervisor.create_instance(:test3)
+    assert DynamicSupervisor.which_children(Multiplex.DynamicSupervisor) |> Kernel.length === children + 1
+    Multiplex.DynamicSupervisor.terminate_session(Process.whereis(:test3))
+    assert DynamicSupervisor.which_children(Multiplex.DynamicSupervisor) |> Kernel.length === children
   end
 end
