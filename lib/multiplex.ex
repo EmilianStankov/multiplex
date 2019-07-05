@@ -2,7 +2,7 @@ defmodule Multiplex do
   @moduledoc """
   GenServer that handles requests for playlist creation and streaming
   """
-  use GenServer
+  use GenServer, shutdown: 10_000
 
   @doc """
   Get playlist by name
@@ -46,9 +46,9 @@ defmodule Multiplex do
     GenServer.call(__MODULE__, {:get_stream, stream, filename})
   end
 
-  def start_link(_) do
+  def start_link(session_id) do
     {:ok, registry} = GenServer.start_link(__MODULE__, :ok)
-    Process.register(registry, __MODULE__)
+    Process.register(registry, session_id)
     {:ok, registry}
   end
 

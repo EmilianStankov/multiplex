@@ -6,8 +6,10 @@ defmodule Multiplex.Application do
     children = [
       # Starts a worker by calling: Lambda.Worker.start_link(arg)
       # {Lambda.Worker, arg},
-      Multiplex,
-      Multiplex.Endpoint
+      # Multiplex,
+      # Multiplex.Endpoint
+      Multiplex.Endpoint,
+      Multiplex.DynamicSupervisor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
