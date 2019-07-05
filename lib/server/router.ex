@@ -21,6 +21,7 @@ defmodule Multiplex.Router do
     case check_session(conn) do
       nil ->
         send_resp(conn, 401, "Unauthorized")
+
       session ->
         res = Multiplex.get_playlist(session, filename)
 
@@ -52,6 +53,7 @@ defmodule Multiplex.Router do
     case check_session(conn) do
       nil ->
         send_resp(conn, 401, "Unauthorized")
+
       session ->
         file = conn.params["file"]
 
@@ -81,6 +83,7 @@ defmodule Multiplex.Router do
     case check_session(conn) do
       nil ->
         send_resp(conn, 401, "Unauthorized")
+
       session ->
         res = Multiplex.get_stream(session, stream, filename)
 
@@ -104,12 +107,15 @@ defmodule Multiplex.Router do
     case conn |> get_req_header("session-id") do
       [] ->
         nil
+
       session_id ->
         session_id = session_id |> Enum.at(0) |> String.to_atom()
+
         case Process.whereis(session_id) do
           nil ->
             {:ok, pid} = Multiplex.DynamicSupervisor.create_instance(session_id)
             pid
+
           x ->
             x
         end
