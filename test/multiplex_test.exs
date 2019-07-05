@@ -5,11 +5,115 @@ defmodule MultiplexTest do
   doctest Multiplex
 
   @opts Router.init([])
+  test "can't create playlist without session" do
+    {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
+
+    upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+    conn = conn(:post, "http://localhost:4000/playlist/add", %{:file => upload})
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    Process.sleep(1000)
+
+    File.rm_rf("#{config[:segments_dir]}/noise")
+  end
+
+  @opts Router.init([])
+  test "can't create playlist with custom config without session" do
+    {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
+
+    upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+
+    conn =
+      conn(:post, "http://localhost:4000/playlist/add", %{:file => upload, :segment_duration => 8})
+
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    Process.sleep(1000)
+
+    File.rm_rf("#{config[:segments_dir]}/noise")
+  end
+
+  @opts Router.init([])
+  test "can't get playlist without a valid session" do
+    conn = conn(:get, "http://localhost:4000/playlist/missing")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+  end
+
+  @opts Router.init([])
+  test "can't get stream without a valid session" do
+    conn = conn(:get, "http://localhost:4000/stream/missing/missing")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+  end
+
+  @opts Router.init([])
+  test "can't get segments for existing stream without session" do
+    {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
+
+    upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
+
+    conn(:post, "http://localhost:4000/playlist/add", %{:file => upload})
+    |> Router.call(@opts)
+
+    Process.sleep(1000)
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.000.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.001.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.002.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.003.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.004.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.005.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.006.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    conn = conn(:get, "http://localhost:4000/stream/noise/noise.007.ts")
+    response = Router.call(conn, @opts)
+
+    assert response.status == 401
+
+    File.rm_rf("#{config[:segments_dir]}/noise")
+  end
+
+  @opts Router.init([])
   test "can create playlist with valid request" do
     {:ok, config} = Application.fetch_env(:multiplex, __MODULE__)
 
     upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
     conn = conn(:post, "http://localhost:4000/playlist/add", %{:file => upload})
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 202
@@ -22,6 +126,7 @@ defmodule MultiplexTest do
   @opts Router.init([])
   test "can't create playlist with missing parameter" do
     conn = conn(:post, "http://localhost:4000/playlist/add")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 400
@@ -35,6 +140,7 @@ defmodule MultiplexTest do
 
     conn =
       conn(:post, "http://localhost:4000/playlist/add", %{:file => upload, :segment_duration => 8})
+      |> put_req_header("session-id", "test")
 
     response = Router.call(conn, @opts)
 
@@ -48,6 +154,7 @@ defmodule MultiplexTest do
   @opts Router.init([])
   test "missing playlist returns proper status" do
     conn = conn(:get, "http://localhost:4000/playlist/missing")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 404
@@ -56,6 +163,7 @@ defmodule MultiplexTest do
   @opts Router.init([])
   test "missing stream returns proper status" do
     conn = conn(:get, "http://localhost:4000/stream/missing/missing")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 404
@@ -64,14 +172,7 @@ defmodule MultiplexTest do
   @opts Router.init([])
   test "missing segment for existing stream returns proper status" do
     conn = conn(:get, "http://localhost:4000/stream/noise/missing")
-    response = Router.call(conn, @opts)
-
-    assert response.status == 404
-  end
-
-  @opts Router.init([])
-  test "missing segment for existing stream returns status" do
-    conn = conn(:get, "http://localhost:4000/stream/noise")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 404
@@ -84,46 +185,55 @@ defmodule MultiplexTest do
     upload = %Plug.Upload{path: "#{config[:test_dir]}/noise.mp3", filename: "noise.mp3"}
 
     conn(:post, "http://localhost:4000/playlist/add", %{:file => upload})
+    |> put_req_header("session-id", "test")
     |> Router.call(@opts)
 
     Process.sleep(1000)
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.000.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.001.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.002.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.003.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.004.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.005.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.006.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
 
     conn = conn(:get, "http://localhost:4000/stream/noise/noise.007.ts")
+    |> put_req_header("session-id", "test")
     response = Router.call(conn, @opts)
 
     assert response.status == 200
