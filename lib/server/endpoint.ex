@@ -1,4 +1,8 @@
 defmodule Multiplex.Endpoint do
+  @moduledoc """
+  Configuration for the Multiplex.Router REST API
+  """
+
   use Plug.Router
   require Logger
 

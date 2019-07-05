@@ -1,9 +1,22 @@
 defmodule Multiplex.Router do
+  @moduledoc """
+  REST API for creating and retrieving streams
+  """
+
   use Plug.Router
 
   plug(:match)
   plug(:dispatch)
 
+  @doc """
+  GET - Get playlist by name
+
+  ## Path params:
+    - filename: String
+  ## Response:
+    - 200 if the playlist is found
+    - 404 if not found
+  """
   get "/playlist/:filename" do
     res = Multiplex.get_playlist(filename)
 
@@ -18,6 +31,18 @@ defmodule Multiplex.Router do
     end
   end
 
+  @doc """
+  POST - Add a new playlist
+
+  ## Body:
+    %{
+      (required) "file" => Plug.Upload,
+      (optional) "segment_duration" => Integer
+    }
+  ## Response:
+    - 202 if the request is accepted
+    - 400 if file is not provided
+  """
   post "/playlist/add" do
     file = conn.params["file"]
 
@@ -32,6 +57,16 @@ defmodule Multiplex.Router do
     end
   end
 
+  @doc """
+  GET - Get stream segment by name
+
+  ## Path params:
+    - stream: String - name of the stream
+    - filename: String - filename of the segment
+  ## Response:
+    - 200 if the stream segment is found
+    - 404 if not found
+  """
   get "/stream/:stream/:filename" do
     res = Multiplex.get_stream(stream, filename)
 
