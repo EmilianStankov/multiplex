@@ -72,6 +72,21 @@ defmodule Multiplex do
   end
 
   @doc """
+  GenServer cast Handler for Multiplex.get_stream/2
+  """
+  def handle_call({:get_stream, stream, filename}, _from, state) do
+    with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
+      case File.exists?("#{config[:segments_dir]}/#{stream}/#{filename}") do
+        true ->
+          {:reply, %{status: 200, file: "#{config[:segments_dir]}/#{stream}/#{filename}"}, state}
+
+        _ ->
+          {:reply, %{status: 404, message: "File not found!"}, state}
+      end
+    end
+  end
+
+  @doc """
   GenServer cast Handler for Multiplex.add_playlist/1 without segment_duration
   """
   def handle_cast({:add_playlist, file}, state) do
@@ -89,20 +104,5 @@ defmodule Multiplex do
     |> Multiplex.M3u8.create_playlist()
 
     {:noreply, state}
-  end
-
-  @doc """
-  GenServer cast Handler for Multiplex.get_stream/2
-  """
-  def handle_call({:get_stream, stream, filename}, _from, state) do
-    with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
-      case File.exists?("#{config[:segments_dir]}/#{stream}/#{filename}") do
-        true ->
-          {:reply, %{status: 200, file: "#{config[:segments_dir]}/#{stream}/#{filename}"}, state}
-
-        _ ->
-          {:reply, %{status: 404, message: "File not found!"}, state}
-      end
-    end
   end
 end
