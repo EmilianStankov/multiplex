@@ -18,16 +18,21 @@ defmodule Multiplex.Router do
     - 404 if not found
   """
   get "/playlist/:filename" do
-    res = Multiplex.get_playlist(filename)
+    case check_session(conn) do
+      nil ->
+        send_resp(conn, 401, "Unauthorized")
+      session ->
+        res = Multiplex.get_playlist(session, filename)
 
-    case res.status do
-      200 ->
-        conn
-        |> put_resp_content_type("application/vnd.apple.mpegurl")
-        |> send_file(res.status, res.file)
+        case res.status do
+          200 ->
+            conn
+            |> put_resp_content_type("application/vnd.apple.mpegurl")
+            |> send_file(res.status, res.file)
 
-      404 ->
-        send_resp(conn, res.status, res.message)
+          404 ->
+            send_resp(conn, res.status, res.message)
+        end
     end
   end
 
@@ -44,16 +49,21 @@ defmodule Multiplex.Router do
     - 400 if file is not provided
   """
   post "/playlist/add" do
-    file = conn.params["file"]
-
-    case file do
+    case check_session(conn) do
       nil ->
-        send_resp(conn, 400, "Bad Request! Missing required file parameter.")
+        send_resp(conn, 401, "Unauthorized")
+      session ->
+        file = conn.params["file"]
 
-      _ ->
-        Multiplex.add_playlist(conn.params)
+        case file do
+          nil ->
+            send_resp(conn, 400, "Bad Request! Missing required file parameter.")
 
-        send_resp(conn, 202, "Accepted!")
+          _ ->
+            Multiplex.add_playlist(session, conn.params)
+
+            send_resp(conn, 202, "Accepted!")
+        end
     end
   end
 
@@ -68,20 +78,41 @@ defmodule Multiplex.Router do
     - 404 if not found
   """
   get "/stream/:stream/:filename" do
-    res = Multiplex.get_stream(stream, filename)
+    case check_session(conn) do
+      nil ->
+        send_resp(conn, 401, "Unauthorized")
+      session ->
+        res = Multiplex.get_stream(session, stream, filename)
 
-    case res.status do
-      200 ->
-        conn
-        |> put_resp_content_type("video/mp2t")
-        |> send_file(res.status, res.file)
+        case res.status do
+          200 ->
+            conn
+            |> put_resp_content_type("video/mp2t")
+            |> send_file(res.status, res.file)
 
-      404 ->
-        send_resp(conn, res.status, res.message)
+          404 ->
+            send_resp(conn, res.status, res.message)
+        end
     end
   end
 
   get _ do
     send_resp(conn, 404, "Not found!")
+  end
+
+  defp check_session(conn) do
+    case conn |> get_req_header("session-id") do
+      [] ->
+        nil
+      session_id ->
+        session_id = session_id |> Enum.at(0) |> String.to_atom()
+        case Process.whereis(session_id) do
+          nil ->
+            {:ok, pid} = Multiplex.DynamicSupervisor.create_instance(session_id)
+            pid
+          x ->
+            x
+        end
+    end
   end
 end

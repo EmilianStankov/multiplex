@@ -2,7 +2,7 @@ defmodule Multiplex do
   @moduledoc """
   GenServer that handles requests for playlist creation and streaming
   """
-  use GenServer, shutdown: 10_000
+  use GenServer
 
   @doc """
   Get playlist by name
@@ -10,8 +10,8 @@ defmodule Multiplex do
   ## Parameters
     - filename: String
   """
-  def get_playlist(filename) do
-    GenServer.call(__MODULE__, {:get_playlist, filename})
+  def get_playlist(session, filename) do
+    GenServer.call(session, {:get_playlist, filename})
   end
 
   @doc """
@@ -22,15 +22,15 @@ defmodule Multiplex do
       - file: Plug.Upload containing an .mp3 file
       - segment_duration (optional): Integer that represents the desired duration of the stream segments
   """
-  def add_playlist(params) do
+  def add_playlist(session, params) do
     with {:ok, config} <- Application.fetch_env(:multiplex, Multiplex) do
       File.mkdir_p(config[:uploads_dir])
       file = "#{config[:uploads_dir]}/#{params["file"].filename}"
       File.cp!(params["file"].path, file)
 
       case params["segment_duration"] do
-        nil -> GenServer.cast(__MODULE__, {:add_playlist, file})
-        x -> GenServer.cast(__MODULE__, {:add_playlist, file, x})
+        nil -> GenServer.cast(session, {:add_playlist, file})
+        x -> GenServer.cast(session, {:add_playlist, file, x})
       end
     end
   end
@@ -42,8 +42,8 @@ defmodule Multiplex do
     - stream: String representing the name of the stream
     - filename: String representing the filename of the desired stream chunk
   """
-  def get_stream(stream, filename) do
-    GenServer.call(__MODULE__, {:get_stream, stream, filename})
+  def get_stream(session, stream, filename) do
+    GenServer.call(session, {:get_stream, stream, filename})
   end
 
   def start_link(session_id) do
